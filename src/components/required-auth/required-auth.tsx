@@ -17,7 +17,6 @@ const RequireAuth = ({ allowedRoles = [] }: RequiredAuthProps) => {
   const decodedToken = jwtDecode.decode(token as string) as unknown as {
     roles: string[];
   };
-  console.log("🚀 ~ file: required-auth.tsx ~ line 21 ~ decodedToken ~ decodedToken", decodedToken);
 
   return decodedToken?.roles?.find((role) => allowedRoles?.includes(role)) ? (
     <Outlet />
