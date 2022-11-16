@@ -6,6 +6,7 @@ export const DashboardPage = () => {
   const [userInfo, setUserInfo] = useState({
     email: "",
   });
+
   const loadUserInfo = useCallback(async () => {
     const response = await authorizedApi.get("/me");
     setUserInfo(response?.data);

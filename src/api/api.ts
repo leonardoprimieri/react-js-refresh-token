@@ -13,6 +13,23 @@ export const authorizedApi = axios.create({
   baseURL: "http://localhost:3333",
 });
 
+let authTokenRequest: Promise<any> | null;
+
+function getAuthToken() {
+  if (!authTokenRequest) {
+    authTokenRequest = authorizedApi.post("/refresh", {
+      refreshToken: cacheStorage.get("refreshToken"),
+    });
+    authTokenRequest.then(resetAuthTokenRequest, resetAuthTokenRequest);
+  }
+
+  return authTokenRequest;
+}
+
+function resetAuthTokenRequest() {
+  authTokenRequest = null;
+}
+
 axios.defaults.withCredentials = true;
 authorizedApi.interceptors.request.use(
   // @ts-ignore
@@ -25,6 +42,7 @@ authorizedApi.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
+
 authorizedApi.interceptors.response.use(
   function (response) {
     return response;
@@ -34,16 +52,15 @@ authorizedApi.interceptors.response.use(
 
     const originalConfig: AxiosOriginalConfig = error.config;
     originalConfig!.headers = { ...originalConfig!.headers };
-    if (error?.response?.status === 401 && !originalConfig?.sent) {
-      originalConfig!.sent = true;
-      const response = await authorizedApi.post("/refresh", {
-        refreshToken: cacheStorage.get("refreshToken"),
-      });
-      cacheStorage.set("token", response?.data?.token);
-      cacheStorage.set("refreshToken", response?.data?.refreshToken);
-      originalConfig.headers["Authorization"] = `Bearer ${response?.data?.token}`;
+    if (error?.response?.status === 401 && originalConfig?.headers && !originalConfig?.sent) {
+      return getAuthToken().then((response) => {
+        originalConfig!.sent = true;
+        cacheStorage.set("token", response?.data?.token);
+        cacheStorage.set("refreshToken", response?.data?.refreshToken);
+        originalConfig.headers["Authorization"] = `Bearer ${response?.data?.token}`;
 
-      return authorizedApi(originalConfig);
+        return authorizedApi(originalConfig);
+      });
     }
     return Promise.reject(error);
   }
