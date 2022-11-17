@@ -1,4 +1,4 @@
-import { createContext, Dispatch, ReactNode, SetStateAction, useState } from "react";
+import { createContext, Dispatch, ReactNode, SetStateAction, useEffect, useState } from "react";
 import { api } from "../../api/api";
 import { useNavigate } from "react-router-dom";
 import { cacheStorage } from "../../core/infra/cache-storage";
@@ -9,7 +9,9 @@ type AuthContextType = {
     user?: {};
   };
   setAuth: Dispatch<SetStateAction<{ roles: never[] }>>;
-  authenticateUser: ({ email, password }: any) => void;
+  login: ({ email, password }: any) => void;
+  isLogged: boolean;
+  logout: () => void;
 };
 
 export const AuthContext = createContext({} as AuthContextType);
@@ -22,8 +24,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const navigate = useNavigate();
 
   const [auth, setAuth] = useState({ roles: [] });
+  const [isLogged, setIsLogged] = useState(false);
 
-  const authenticateUser = async ({ email, password }: any) => {
+  const token = cacheStorage.get<string>("token");
+
+  useEffect(() => {
+    if (!token) return;
+    setIsLogged(true);
+  }, [token]);
+
+  const login = async ({ email, password }: any) => {
     try {
       const response = await api.post("/sessions", {
         email,
@@ -44,8 +54,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  const logout = () => {
+    cacheStorage.remove("token");
+    cacheStorage.remove("refreshToken");
+    setAuth({ roles: [] });
+    setIsLogged(false);
+    navigate("/");
+  };
+
   return (
-    <AuthContext.Provider value={{ auth, setAuth, authenticateUser }}>
+    <AuthContext.Provider value={{ auth, setAuth, login, logout, isLogged }}>
       {children}
     </AuthContext.Provider>
   );

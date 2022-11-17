@@ -1,9 +1,20 @@
-import { Link } from "react-router-dom";
 import { PageContainer } from "../../components/page-container/page-container";
-import { cacheStorage } from "../../core/infra/cache-storage";
-import { CacheStorage } from "../../core/infra/cache-storage/cache-storage";
+import useAuth from "../../hooks/auth/use-auth";
 
 export const HomePage = () => {
-  const token = cacheStorage.get("token");
-  return <PageContainer pageLink='/login' pageName='Home' destinationPage='Login' />;
+  const { isLogged } = useAuth();
+
+  const pageParams = {
+    pageLink: isLogged ? "/dashboard" : "/login",
+    destinationPage: isLogged ? "Dashboard" : "Login",
+    pageName: "Home",
+  };
+
+  return (
+    <PageContainer
+      pageLink={pageParams.pageLink}
+      pageName={pageParams.pageName}
+      destinationPage={pageParams.destinationPage}
+    />
+  );
 };

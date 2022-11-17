@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { authorizedApi } from "../../api/api";
 import { PageContainer } from "../../components/page-container/page-container";
+import useAuth from "../../hooks/auth/use-auth";
 
 export const DashboardPage = () => {
+  const { logout } = useAuth();
+
   const [userInfo, setUserInfo] = useState({
     email: "",
   });
@@ -18,7 +21,7 @@ export const DashboardPage = () => {
 
   return (
     <PageContainer destinationPage='Home' pageLink='/' pageName='Dashboard'>
-      {userInfo?.email}
+      {userInfo?.email} <button onClick={logout}>Logout</button>
     </PageContainer>
   );
 };

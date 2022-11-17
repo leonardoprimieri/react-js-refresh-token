@@ -2,16 +2,17 @@ import { FormEvent, useContext, useState } from "react";
 import { PageContainer } from "../../components/page-container/page-container";
 
 import { AuthContext } from "../../contexts/auth/auth-provider";
+import useAuth from "../../hooks/auth/use-auth";
 
 export const LoginPage = () => {
-  const { authenticateUser } = useContext(AuthContext);
+  const { login } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    authenticateUser({ email, password });
+    login({ email, password });
   };
 
   return (

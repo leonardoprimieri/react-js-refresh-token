@@ -5,12 +5,14 @@ type AxiosOriginalConfig = AxiosRequestConfig & {
   sent?: boolean;
 };
 
+const baseURL = import.meta.env.VITE_API_URL;
+
 export const api = axios.create({
-  baseURL: "http://localhost:3333",
+  baseURL,
 });
 
 export const authorizedApi = axios.create({
-  baseURL: "http://localhost:3333",
+  baseURL,
 });
 
 let authTokenRequest: Promise<any> | null;
@@ -35,8 +37,8 @@ authorizedApi.interceptors.request.use(
   // @ts-ignore
   (config: AxiosRequestConfig) => {
     if (!config?.headers) return;
-    if (!config.headers?.["Authorization"]) {
-      config.headers["Authorization"] = `Bearer ${cacheStorage.get("token")}`;
+    if (!config.headers?.Authorization) {
+      config.headers!.Authorization = `Bearer ${cacheStorage.get("token")}`;
     }
     return config;
   },
@@ -52,13 +54,12 @@ authorizedApi.interceptors.response.use(
 
     const originalConfig: AxiosOriginalConfig = error.config;
     originalConfig!.headers = { ...originalConfig!.headers };
-    if (error?.response?.status === 401 && originalConfig?.headers && !originalConfig?.sent) {
+    if (error?.response?.status === 401 && originalConfig && !originalConfig?.sent) {
       return getAuthToken().then((response) => {
         originalConfig!.sent = true;
         cacheStorage.set("token", response?.data?.token);
         cacheStorage.set("refreshToken", response?.data?.refreshToken);
-        originalConfig.headers["Authorization"] = `Bearer ${response?.data?.token}`;
-
+        originalConfig.headers!.Authorization = `Bearer ${response?.data?.token}`;
         return authorizedApi(originalConfig);
       });
     }
