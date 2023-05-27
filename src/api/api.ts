@@ -5,7 +5,7 @@ type AxiosOriginalConfig = AxiosRequestConfig & {
   sent?: boolean;
 };
 
-const baseURL = import.meta.env.VITE_API_URL;
+const baseURL = import.meta.env.LEO_API_URL;
 
 export const api = axios.create({
   baseURL,
