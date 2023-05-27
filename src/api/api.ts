@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { cacheStorage } from "../core/infra/cache-storage";
 
 type AxiosOriginalConfig = AxiosRequestConfig & {
-  sent?: boolean;
+  sent2?: boolean;
 };
 
 const baseURL = import.meta.env.VITE_API_URL;
