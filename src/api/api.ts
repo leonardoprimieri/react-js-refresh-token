@@ -54,7 +54,11 @@ authorizedApi.interceptors.response.use(
 
     const originalConfig: AxiosOriginalConfig = error.config;
     originalConfig!.headers = { ...originalConfig!.headers };
-    if (error?.response?.status === 401 && originalConfig && !originalConfig?.sent) {
+    if (
+      error?.response?.status === 401 &&
+      originalConfig &&
+      !originalConfig?.sent
+    ) {
       return getAuthToken().then((response) => {
         originalConfig!.sent = true;
         cacheStorage.set("token", response?.data?.token);

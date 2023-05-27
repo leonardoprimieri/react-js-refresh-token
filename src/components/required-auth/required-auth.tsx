@@ -7,16 +7,21 @@ type RequiredAuthProps = {
   allowedRoles: string[];
 };
 
-const RequireAuth = ({ allowedRoles = [] }: RequiredAuthProps) => {
+export const RequireAuth = ({ allowedRoles = [] }: RequiredAuthProps) => {
   const { isLogged } = useAuth();
   const location = useLocation();
 
   const token = cacheStorage.get<string>("token");
   const decodedToken = {
-    roles: token ? jwtDecode.decode(token).roles : [],
+    roles: token
+      ? jwtDecode.decode<{
+          roles: string[];
+        }>(token).roles
+      : [],
   };
 
-  return decodedToken?.roles?.find((role) => allowedRoles?.includes(role)) ? (
+  return (!allowedRoles.length && isLogged) ||
+    decodedToken?.roles?.find((role) => allowedRoles?.includes(role)) ? (
     <Outlet />
   ) : !isLogged ? (
     <Navigate to='/unauthorized' state={{ from: location }} replace />
@@ -24,5 +29,3 @@ const RequireAuth = ({ allowedRoles = [] }: RequiredAuthProps) => {
     <Navigate to='/login' state={{ from: location }} replace />
   );
 };
-
-export default RequireAuth;
